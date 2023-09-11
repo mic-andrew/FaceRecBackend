@@ -14,21 +14,29 @@ export const User = new Schema({
     type: String,
   },
   email: {
-    required: false,
-    type: String,
-  },
-  profile_image: {},
-  phone_number: {
     required: true,
+    type: String,
+    unique: true,
+  },
+  password: { type: String, required: true },
+
+  profileImage: {},
+  phoneNumber: {
+    required: false,
     type: Number,
   },
   gender: {
     required: true,
     type: String,
   },
+  stateOfOrigin: {
+    type: String,
+    required: true,
+  },
+
   role: {
     type: String,
-    enum: ["admin", "teacher", "student", "principal","vice_principal"],
+    enum: ["admin", "teacher", "student", "principal", "vice_principal"],
     required: true,
   },
 });
