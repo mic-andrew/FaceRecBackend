@@ -3,6 +3,7 @@ import { Schema } from "mongoose";
 export const Student = new Schema({
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
   parentPhoneNumber: { type: String, required: true },
+  classRoom: { type: Number, required: true },
 });
 
 
