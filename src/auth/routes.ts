@@ -5,6 +5,6 @@ import { registerUser } from "../auth/controllers"
 const router = Router();
 
 
-router.get("/register", registerUser)
+router.post("/register", registerUser)
 
 export default router;
