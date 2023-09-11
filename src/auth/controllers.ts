@@ -9,9 +9,10 @@ const registerUser = async (req: Request, res: Response) => {
     res
       .status(201)
       .json({ message: response.success.message, user: response.success.user });
+  } else {
+      res.status(400).json({ message: response.error.message });
+  
   }
-  res.status(400).json({ message: response.error.message });
-
 };
 
 const login = (req: Request, res: Response) => {};
