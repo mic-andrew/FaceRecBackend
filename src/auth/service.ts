@@ -1,5 +1,8 @@
 import { models } from "../models";
 import { IUser } from "../types/userTypes";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { jwtSecret } from "../app";
 
 const createRole = async (userId: any, role: string) => {
   switch (role) {
@@ -20,7 +23,6 @@ const createRole = async (userId: any, role: string) => {
       await models.Admin.create({ user: userId });
       break;
     default:
-      // Handle unknown roles or return an error
       throw new Error("Unknown role");
   }
 };
@@ -34,6 +36,8 @@ export const registerUserService = async (userData: IUser) => {
     if (existingUser) {
       return { error: { message: "Email already exists" } };
     }
+    const encryptedPassword = await bcrypt.hash(userData.password, 10);
+    userData.password = encryptedPassword;
     const newUser = new models.User(userData);
     await newUser.save();
 
@@ -41,9 +45,41 @@ export const registerUserService = async (userData: IUser) => {
 
     createRole(userId, userData.role);
 
-    return { success: { message: "User created successfully", user: newUser } };
+    return {
+      success: true,
+      message: "User created successfully",
+      data: newUser,
+    };
   } catch (error) {
     console.error(error);
-    return { error: { message: error } };
+    return { error: true, message: error };
+  }
+};
+
+export const loginService = async (email: string, password: string) => {
+  try {
+    const userDetails = { email, password };
+    const existingUser: any = await models.User.findOne(userDetails);
+    const decodedPassword = await bcrypt.compare(
+      password,
+      existingUser.password
+    );
+
+    if (existingUser) {
+      const token = await jwt.sign(existingUser, jwtSecret, {
+        expiresIn: "1h",
+      });
+      existingUser.token = token;
+
+      return {
+        success: true,
+        message: `Welcome back ${existingUser.firstName}`,
+        data: existingUser,
+      };
+    } else {
+      return { error: true, message: "Invalid Email or Password" };
+    }
+  } catch (error) {
+    return { error: true, message: "something went wrong" };
   }
 };
