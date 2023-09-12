@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { registerUserService } from "./service";
+import { loginService, registerUserService } from "./service";
 import { IUser } from "../types/userTypes";
 
 const registerUser = async (req: Request, res: Response) => {
@@ -10,11 +10,19 @@ const registerUser = async (req: Request, res: Response) => {
       .status(201)
       .json({ message: response.success.message, user: response.success.user });
   } else {
-      res.status(400).json({ message: response.error.message });
-  
+    res.status(400).json({ message: response.error.message });
   }
 };
 
-const login = (req: Request, res: Response) => {};
+const loginController = (req: Request, res: Response) => {
+  const { email, password } = req.body;
+  const response: any = loginService(email, password);
+  console.log(response);
+  if (response.success === true) {
+    res.status(201).json(response);
+  } else {
+    res.status(400).json(response);
+  }
+};
 
-export { registerUser, login };
+export { registerUser, loginController };
