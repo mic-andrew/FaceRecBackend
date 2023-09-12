@@ -39,5 +39,8 @@ export const User = new Schema<IUser>({
     type: String,
     enum: ["admin", "teacher", "student", "principal", "vice_principal"],
     required: true,
+    },
+   token: {
+    type: String,
   },
 });

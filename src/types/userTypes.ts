@@ -1,4 +1,3 @@
-
 export interface IUser {
   firstName: string;
   lastName: string;
@@ -10,4 +9,5 @@ export interface IUser {
   gender: string;
   stateOfOrigin: string;
   role: "admin" | "teacher" | "student" | "principal" | "vice_principal";
+  token?: string;
 }
