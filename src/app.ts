@@ -13,6 +13,9 @@ const port = process.env.PORT;
 const dbUrl = process.env.DB_URL || "mongodb://127.0.0.1:27017";
 app.use(express.json());
 
+export const jwtSecret = process.env.SESSION_SECRET || ""
+
+
 
 mongoose.connect(dbUrl).then(() => console.log("Connected!"));
 
