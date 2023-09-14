@@ -14,9 +14,9 @@ const registerUser = async (req: Request, res: Response) => {
   }
 };
 
-const loginController = (req: Request, res: Response) => {
+const loginController = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  const response: any = loginService(email, password);
+  const response: any = await loginService(email, password);
   console.log(response);
   if (response.success === true) {
     res.status(201).json(response);
