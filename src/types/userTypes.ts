@@ -10,4 +10,6 @@ export interface IUser {
   stateOfOrigin: string;
   role: "admin" | "teacher" | "student" | "principal" | "vice_principal";
   token?: string;
+  address: string;
+  parentNumber?: string;
 }
