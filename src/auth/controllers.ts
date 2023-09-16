@@ -4,6 +4,9 @@ import { IUser } from "../types/userTypes";
 
 const registerUser = async (req: Request, res: Response) => {
   const userData: IUser = req.body;
+  if (req.file) {
+    userData.profileImage = req.file.path;
+  }
   const response: any = await registerUserService(userData);
   if (response.success) {
     res.status(201).json({
