@@ -6,11 +6,13 @@ const registerUser = async (req: Request, res: Response) => {
   const userData: IUser = req.body;
   const response: any = await registerUserService(userData);
   if (response.success) {
-    res
-      .status(201)
-      .json({ message: response.success.message, user: response.success.user });
+    res.status(201).json({
+      message: response.message,
+      data: response.data,
+      success: response.success,
+    });
   } else {
-    res.status(400).json({ message: response.error.message });
+    res.send({ message: response.message, error: response.error });
   }
 };
 
@@ -21,7 +23,7 @@ const loginController = async (req: Request, res: Response) => {
   if (response.success === true) {
     res.status(201).json(response);
   } else {
-    res.status(400).json(response);
+    res.status(409).json(response);
   }
 };
 
