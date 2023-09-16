@@ -1,13 +1,19 @@
 import { model } from "mongoose";
-import { User } from "./userModel";
-import { Admin, Principal, Student, Teacher } from "./roleModels";
+import { UserSchema } from "./userModel";
+import {
+  AdminSchema,
+  PrincipalSchema,
+  StudentScema,
+  TeacherSchema,
+} from "./roleModels";
+
 import { Subject } from "./subject";
 
 export const models = {
-  User: model("User", User),
-  Student: model("Student", Student),
-  Teacher: model("Teacher", Teacher),
-  Admin: model("Admin", Admin),
+  User: model("User", UserSchema),
+  Student: model("Student", StudentScema),
+  Teacher: model("Teacher", TeacherSchema),
+  Admin: model("Admin", AdminSchema),
   Subject: model("Subject", Subject),
-  Principal: model("Principal", Principal),
+  Principal: model("Principal", PrincipalSchema),
 };

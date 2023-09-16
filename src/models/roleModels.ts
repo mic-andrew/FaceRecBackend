@@ -1,20 +1,19 @@
 import { Schema } from "mongoose";
+import { UserSchema } from "./userModel";
+const extendSchema = require('mongoose-extend-schema');
 
-export const Student = new Schema({
-  user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  parentPhoneNumber: { type: String, required: true },
-  classRoom: { type: Number, required: true },
-});
-
-
-export const Teacher = new Schema({
+export const StudentScema = extendSchema(UserSchema,{
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
 });
 
-export const Principal = new Schema({
+export const TeacherSchema = extendSchema(UserSchema,{
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
 });
 
-export const Admin = new Schema({
+export const PrincipalSchema = new Schema({
+  user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+});
+
+export const AdminSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
 });
