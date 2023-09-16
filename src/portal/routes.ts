@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { viewTeachersOrStudentsController } from "./controllers"
+import { getImageController, viewTeachersOrStudentsController } from "./controllers";
 
 const router = Router();
-router.get("/findall", viewTeachersOrStudentsController)
+router.get("/findall", viewTeachersOrStudentsController);
+router.get('/get-image/:filename', getImageController);
 
 
 export default router;
