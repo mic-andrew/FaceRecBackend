@@ -10,6 +10,7 @@ const createRole = async (userId: any, role: string, userData: any) => {
       await models.Student.create({
         user: userId,
         ...userData,
+        studentClass:userData.classRoom
       });
       break;
     case "teacher":

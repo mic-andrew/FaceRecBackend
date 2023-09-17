@@ -1,12 +1,13 @@
 import { Schema } from "mongoose";
 import { UserSchema } from "./userModel";
-const extendSchema = require('mongoose-extend-schema');
+const extendSchema = require("mongoose-extend-schema");
 
-export const StudentScema = extendSchema(UserSchema,{
+export const StudentScema = extendSchema(UserSchema, {
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  studentClass: { type: String },
 });
 
-export const TeacherSchema = extendSchema(UserSchema,{
+export const TeacherSchema = extendSchema(UserSchema, {
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
 });
 
