@@ -10,7 +10,7 @@ const createRole = async (userId: any, role: string, userData: any) => {
       await models.Student.create({
         user: userId,
         ...userData,
-        studentClass:userData.classRoom
+        studentClass: userData.classRoom,
       });
       break;
     case "teacher":
@@ -38,7 +38,7 @@ export const registerUserService = async (userData: IUser) => {
     }
     const encryptedPassword = await bcrypt.hash(userData.password, 10);
     userData.password = encryptedPassword;
-    const newUser = new models.User(userData);  
+    const newUser = new models.User(userData);
     await newUser.save();
 
     const userId = newUser._id;
@@ -84,7 +84,10 @@ export const loginService = async (email: string, password: string) => {
         };
       }
     } else {
-      return { error: true, message: "Invalid Email or Password" };
+      return {
+        success: false,
+        message: "Invalid Email or Password",
+      };
     }
   } catch (error) {
     return { error: true, message: error };
