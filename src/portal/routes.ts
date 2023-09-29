@@ -1,9 +1,16 @@
 import { Router } from "express";
-import { getImageController, viewTeachersOrStudentsController } from "./controllers";
+import {
+  getImageController,
+  viewTeachersOrStudentsController,
+} from "./controllers";
+import { authenticateUserWithJWT } from "../middleWare/portalMiddleware";
 
 const router = Router();
-router.get("/findall", viewTeachersOrStudentsController);
-router.get('/get-image/:filename', getImageController);
-
+router.get(
+  "/findall",
+  authenticateUserWithJWT("principal"),
+  viewTeachersOrStudentsController
+);
+router.get("/get-image/:filename", getImageController);
 
 export default router;
