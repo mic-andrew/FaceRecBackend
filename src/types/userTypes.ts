@@ -12,4 +12,6 @@ export interface IUser {
   token?: string;
   address: string;
   parentNumber?: string;
+  dob?: string;
+
 }

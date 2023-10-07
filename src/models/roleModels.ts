@@ -5,6 +5,7 @@ const extendSchema = require("mongoose-extend-schema");
 export const StudentScema = extendSchema(UserSchema, {
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
   studentClass: { type: String },
+  dateOfBirth: { type: String },
 });
 
 export const TeacherSchema = extendSchema(UserSchema, {

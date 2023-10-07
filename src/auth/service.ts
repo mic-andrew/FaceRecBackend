@@ -10,7 +10,8 @@ const createRole = async (userId: any, role: string, userData: any) => {
       await models.Student.create({
         user: userId,
         ...userData,
-        studentClass: userData.classRoom,
+        studentClass: userData.classroom,
+        dateOfBirth: userData.dob,
       });
       break;
     case "teacher":
@@ -28,6 +29,7 @@ const createRole = async (userId: any, role: string, userData: any) => {
 };
 
 export const registerUserService = async (userData: IUser) => {
+  console.log(userData)
   try {
     const existingUser: IUser | null = await models.User.findOne({
       email: userData.email,
