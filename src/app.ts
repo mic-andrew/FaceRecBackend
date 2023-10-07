@@ -15,7 +15,7 @@ app.use(express.json());
 
 
 
-export const jwtSecret = process.env.SESSION_SECRET || "";
+export const jwtSecret = process.env.SESSION_SECRET || "3y6T$#r9D@2sP!zW";
 
 mongoose.connect(dbUrl).then(() => console.log("Connected!"));
 
