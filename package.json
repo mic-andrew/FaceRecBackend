@@ -5,7 +5,8 @@
   "main": "app.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "NODE_ENV=development NODE_OPTIONS=--enable-source-maps nodemon src/app.ts"
+    "dev": "NODE_ENV=development NODE_OPTIONS=--enable-source-maps nodemon src/app.ts",
+    "start": "tsc && NODE_ENV=production node dist/app.js"
   },
   "keywords": [],
   "author": "",
