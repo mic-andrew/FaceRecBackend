@@ -8,6 +8,7 @@ import {
 } from "./roleModels";
 
 import { Subject } from "./subject";
+import { EventSchema } from "./allSchemas";
 
 export const models = {
   User: model("User", UserSchema),
@@ -16,4 +17,5 @@ export const models = {
   Admin: model("Admin", AdminSchema),
   Subject: model("Subject", Subject),
   Principal: model("Principal", PrincipalSchema),
+  Event: model("Events", EventSchema),
 };
