@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { viewTeachersOrStudentsService } from "./service";
+import { saveEventToDb, viewTeachersOrStudentsService } from "./service";
+import { EventTypes } from "../types/types";
 const path = require("path");
 const fs = require("fs");
 
@@ -8,7 +9,7 @@ export const viewTeachersOrStudentsController = async (
   res: Response
 ) => {
   const { role }: any = req.query;
-    const token = req.headers.authorization
+  const token = req.headers.authorization;
   const response = await viewTeachersOrStudentsService(role);
   res.status(200).json({ data: response, success: true });
 };
@@ -20,5 +21,26 @@ export const getImageController = (req: Request, res: Response) => {
     res.sendFile(imagePath);
   } else {
     res.status(404).json({ error: "Image not found" });
+  }
+};
+
+export const addEventController = async (req: Request, res: Response) => {
+  const event: EventTypes = req.body;
+   if (req.file) {
+     event.image = req.file.filename;
+     console.log(req.file.filename);
+    }
+  console.log("event", event);
+
+  try {
+    const response: any = await saveEventToDb(event);
+    if (response?.title) {
+      res.status(200).json({
+        data: response,
+        success: true,
+      });
+    }
+  } catch (e) {
+    return e;
   }
 };
