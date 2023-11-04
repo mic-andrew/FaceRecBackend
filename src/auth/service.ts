@@ -3,6 +3,7 @@ import { IUser } from "../types/userTypes";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { jwtSecret } from "../app";
+import { logger } from "../utils";
 
 const createRole = async (userId: any, role: string, userData: any) => {
   switch (role) {
@@ -29,7 +30,8 @@ const createRole = async (userId: any, role: string, userData: any) => {
 };
 
 export const registerUserService = async (userData: IUser) => {
-  console.log(userData)
+  userData.email.toLowerCase();
+
   try {
     const existingUser: IUser | null = await models.User.findOne({
       email: userData.email,
@@ -61,6 +63,8 @@ export const registerUserService = async (userData: IUser) => {
 export const loginService = async (email: string, password: string) => {
   try {
     const userDetails = { email };
+    email.toLowerCase();
+
     const existingUser: any = await models.User.findOne(userDetails);
 
     console.log(existingUser);
@@ -84,6 +88,11 @@ export const loginService = async (email: string, password: string) => {
           message: `Welcome back ${existingUser.firstName}`,
           data: existingUser,
         };
+      } else {
+        return {
+          success: false,
+          message: "Invalid Email or Password",
+        };
       }
     } else {
       return {
@@ -92,6 +101,8 @@ export const loginService = async (email: string, password: string) => {
       };
     }
   } catch (error) {
+    logger(error);
+
     return { error: true, message: error };
   }
 };
