@@ -3,6 +3,7 @@ import {
   addEventController,
   getImageController,
   viewTeachersOrStudentsController,
+  getEventsController,
 } from "./controllers";
 import { authenticateUserWithJWT } from "../middleWare/portalMiddleware";
 import { upload } from "../middleWare/uploadFileMiddleware";
@@ -14,7 +15,7 @@ router.get(
   viewTeachersOrStudentsController
 );
 router.get("/get-image/:filename", getImageController);
-router.post("/add-event",upload.single('image'), addEventController);
-
+router.post("/add-event", upload.single("image"), addEventController);
+router.get("/get-events", getEventsController);
 
 export default router;

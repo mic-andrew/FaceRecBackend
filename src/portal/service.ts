@@ -18,3 +18,16 @@ export const saveEventToDb = async (events: EventTypes) => {
     console.log(e);
   }
 };
+
+
+export const getAllEventsService = async () => {
+  try {
+    const events = await models.Event.find();
+    return events
+
+  } catch (e) {
+    console.log('err', e)
+  }
+
+
+}
