@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { loginService, registerUserService } from "./service";
 import { IUser } from "../types/userTypes";
+import { logger } from "../utils";
 
 const registerUser = async (req: Request, res: Response) => {
   const userData: IUser = req.body;
@@ -8,22 +9,26 @@ const registerUser = async (req: Request, res: Response) => {
     userData.profileImage = req.file.filename;
   }
   const response: any = await registerUserService(userData);
-  if (response.success) {
-    res.status(201).json({
-      message: response.message,
-      data: response.data,
-      success: response.success,
-    });
-  } else {
-    res.send({ message: response.message, error: response.error });
+  try {
+    if (response.success) {
+      res.status(201).json({
+        message: response.message,
+        data: response.data,
+        success: response.success,
+      });
+    } else {
+      res.send({ message: response.message, error: response.error });
+    }
+  } catch (err) {
+    throw err;
   }
 };
 
 const loginController = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  console.log(req.body);
   try {
     const response: any = await loginService(email, password);
+    logger(response)
     console.log("response", response);
     if (response.success === true) {
       res.status(201).json(response);
@@ -33,6 +38,7 @@ const loginController = async (req: Request, res: Response) => {
     }
   } catch (err) {
     console.log(err);
+    throw err;
   }
 };
 
