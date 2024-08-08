@@ -4,12 +4,14 @@ import { IUser } from "../types/userTypes";
 import { logger } from "../utils";
 
 const registerUser = async (req: Request, res: Response) => {
-  const userData: IUser = req.body;
-  if (req.file) {
-    userData.profileImage = req.file.filename;
+  const { firstName, email, password }: IUser = req.body;
+
+  if (!firstName || !email || !password) {
+    return res.status(400).json({ message: "Please enter all fields" });
   }
-  const response: any = await registerUserService(userData);
+
   try {
+    const response: any = await registerUserService({ firstName, email, password });
     if (response.success) {
       res.status(201).json({
         message: response.message,
@@ -17,28 +19,29 @@ const registerUser = async (req: Request, res: Response) => {
         success: response.success,
       });
     } else {
-      res.send({ message: response.message, error: response.error });
+      res.status(400).json({ message: response.message, error: response.error });
     }
   } catch (err) {
-    throw err;
+    console.error(err);
+    res.status(500).send("Server Error");
   }
 };
 
 const loginController = async (req: Request, res: Response) => {
   const { email, password } = req.body;
+
   try {
     const response: any = await loginService(email, password);
-    logger(response)
-    console.log("response", response);
-    if (response.success === true) {
-      res.status(201).json(response);
-      console.log(response);
+    logger(response);
+
+    if (response.success) {
+      res.status(200).json(response);
     } else {
-      res.status(409).json(response);
+      res.status(401).json(response);
     }
   } catch (err) {
-    console.log(err);
-    throw err;
+    console.error(err);
+    res.status(500).send("Server Error");
   }
 };
 

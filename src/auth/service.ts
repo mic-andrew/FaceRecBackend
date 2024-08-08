@@ -5,32 +5,9 @@ import jwt from "jsonwebtoken";
 import { jwtSecret } from "../app";
 import { logger } from "../utils";
 
-const createRole = async (userId: any, role: string, userData: any) => {
-  switch (role) {
-    case "student":
-      await models.Student.create({
-        user: userId,
-        ...userData,
-        studentClass: userData.classroom,
-        dateOfBirth: userData.dob,
-      });
-      break;
-    case "teacher":
-      await models.Teacher.create({ user: userId, ...userData });
-      break;
-    case "principal":
-      await models.Principal.create({ user: userId, ...userData });
-      break;
-    case "admin":
-      await models.Admin.create({ user: userId, ...userData });
-      break;
-    default:
-      throw new Error("Unknown role");
-  }
-};
 
 export const registerUserService = async (userData: IUser) => {
-  userData.email.toLowerCase();
+  userData?.email?.toLowerCase();
 
   try {
     const existingUser: IUser | null = await models.User.findOne({
@@ -47,11 +24,10 @@ export const registerUserService = async (userData: IUser) => {
 
     const userId = newUser._id;
 
-    await createRole(userId, userData.role, userData);
 
     return {
       success: true,
-      message: `${userData.role} created successfully`,
+      message: `${userData.firstName} created successfully`,
       data: newUser,
     };
   } catch (error) {

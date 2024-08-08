@@ -1,12 +1,11 @@
 import { Router } from "express";
 import authRoutes from "../auth/routes"
-import portalRoutes from "../portal/routes"
+import faceRecognitionRoutes from "../faceRecognition/routes"
 
 const router = Router();
 
-
 router.use("/auth", authRoutes);
-router.use("/portal", portalRoutes);
+router.use("/face-recognition", faceRecognitionRoutes);
 
 
 
