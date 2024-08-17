@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "app.ts",
-  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "NODE_ENV=development NODE_OPTIONS=--enable-source-maps nodemon src/app.ts",
-    "start": "tsc && NODE_ENV=production node dist/app.js"
+    "dev": "NODE_ENV=development nodemon --exec ts-node src/app.ts",
+    "build": "tsc",
+    "start": "NODE_ENV=production node dist/app.js"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +33,7 @@
     "@types/node": "^20.6.0",
     "concurrently": "^8.2.1",
     "nodemon": "^3.0.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.2.2"
   }
 }
