@@ -2,6 +2,17 @@ import * as faceapi from 'face-api.js';
 import fs from 'fs/promises';
 import path from 'path';
 import { Canvas, Image, ImageData, createCanvas, loadImage } from 'canvas';
+import Suspect from '../models/Suspects';
+
+interface SuspectData {
+  name: string;
+  age: number;
+  lastLocation: string;
+  country: string;
+  gender: string;
+  images: string[];
+}
+
 
 // Monkey patch the environment without type assertions
 (faceapi.env as any).monkeyPatch({ Canvas, Image, ImageData });
@@ -70,5 +81,22 @@ export async function recognizeFaceInImage(imageData: Buffer) {
   } catch (error) {
     console.error('Error in recognizeFaceInImage:', error);
     return { error: 'Failed to process image' };
+  }
+}
+
+
+
+export async function uploadSuspectData(suspectData: SuspectData) {
+  try {
+    const suspect = new Suspect(suspectData);
+    await suspect.save();
+
+    return {
+      message: 'Suspect data uploaded successfully',
+      suspectId: suspect._id,
+    };
+  } catch (error) {
+    console.error('Error uploading suspect data:', error);
+    throw new Error('Failed to upload suspect data');
   }
 }

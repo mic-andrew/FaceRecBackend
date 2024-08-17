@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "app.ts",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "NODE_ENV=development NODE_OPTIONS=--enable-source-maps nodemon src/app.ts",
