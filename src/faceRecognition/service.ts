@@ -87,6 +87,7 @@ export async function recognizeFaceInImage(imageData: Buffer) {
 
 
 export async function uploadSuspectData(suspectData: SuspectData) {
+  console.log("suspect data=======>", suspectData)
   try {
     const suspect = new Suspect(suspectData);
     await suspect.save();
@@ -98,5 +99,16 @@ export async function uploadSuspectData(suspectData: SuspectData) {
   } catch (error) {
     console.error('Error uploading suspect data:', error);
     throw new Error('Failed to upload suspect data');
+  }
+}
+
+export async function fetchSuspects() {
+  try {
+    const suspects = await Suspect.find().select('-__v').lean();
+    console.log("------> feching suspects", suspects)
+    return suspects;
+  } catch (error) {
+    console.error('Error in fetchSuspects service:', error);
+    throw error;
   }
 }
