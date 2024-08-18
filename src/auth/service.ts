@@ -43,7 +43,6 @@ export const loginService = async (email: string, password: string) => {
 
     const existingUser: any = await models.User.findOne(userDetails);
 
-    console.log(existingUser);
 
     if (existingUser) {
       const decodedPassword = await bcrypt.compare(
@@ -52,7 +51,7 @@ export const loginService = async (email: string, password: string) => {
       );
 
       if (decodedPassword) {
-        console.log("decodedPassword ", decodedPassword);
+
         const userId = existingUser._id;
 
         const token = await jwt.sign({ userId }, jwtSecret, {

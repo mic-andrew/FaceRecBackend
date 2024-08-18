@@ -34,6 +34,7 @@ mongoose.connect(dbUrl).then(() => console.log("Connected!"));
 
 app.use("/", routes);
 
+console.log('=====>Current working directory:', process.cwd());
 
 
 if (!uploadsDir) {
