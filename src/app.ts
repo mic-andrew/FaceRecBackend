@@ -39,6 +39,9 @@ console.log('=====>Current working directory:', process.cwd());
 const files = fs.readdirSync(process.cwd());
 console.log('Files and folders in current working directory:', files);
 
+const srcDir = path.join(process.cwd(), 'src');
+const srcFiles = fs.readdirSync(srcDir);
+console.log('Files and folders in "src" directory:', srcFiles);
 
 
 if (!uploadsDir) {
