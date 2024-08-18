@@ -21,6 +21,9 @@ interface SuspectData {
   }[];
 }
 
+const uploadDir = process.env.UPLOADS_DIR || path.join(__dirname, '..', 'uploads');
+
+
 
 // Monkey patch the environment without type assertions
 (faceapi.env as any).monkeyPatch({ Canvas, Image, ImageData });
@@ -73,9 +76,8 @@ export async function loadLabeledImages() {
           continue;  // Skip this image and move to the next
         }
 
-        const imgPath = path.join(__dirname, '..', 'uploads', image.filename);
         try {
-          const img = await fs.readFile(imgPath);
+          const img = await fs.readFile(uploadDir);
           const descriptor = await createFaceDescriptor(img);
           if (descriptor) {
             labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(suspect._id.toString(), [descriptor]));

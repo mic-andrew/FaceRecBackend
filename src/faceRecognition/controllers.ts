@@ -8,7 +8,8 @@ import { uploadSingleImage, uploadSuspectImage } from '../middleWare/uploadFileM
 
 
 
-const uploadDir = path.join(__dirname, '..', 'uploads');
+const uploadDir  = process.env.UPLOADS_DIR  || path.join(__dirname, '..', 'uploads');
+
 
 // Ensure upload directory exists
 fs.mkdir(uploadDir, { recursive: true }).catch(console.error);
