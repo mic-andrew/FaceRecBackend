@@ -4,6 +4,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import routes from "./routes/index";
 import path from 'path';
+import fs from 'fs';
 
 
 dotenv.config();
@@ -28,12 +29,20 @@ app.get("/health", (req: Request, res: Response) => {
 });
 
 mongoose.connect(dbUrl).then(() => console.log("Connected!"));
-const uploadsDir = path.join(__dirname, '..', 'uploads');
-app.use('/uploads', express.static(uploadsDir));
+
 
 app.use("/", routes);
 
-// cr
+const uploadsDir = path.join(__dirname, '..', 'src', 'uploads');
+app.use('/uploads', express.static(uploadsDir));
+
+fs.readdir(uploadsDir, (err, files) => {
+  if (err) {
+    console.error('Error reading uploads directory:', err);
+  } else {
+    console.log('Files in uploads directory:', files);
+  }
+});
 
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
