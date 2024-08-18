@@ -1,11 +1,26 @@
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs/promises';
+import fs from 'fs';
 
-const uploadDir = path.join(__dirname, '..', 'uploads');
+// Use fs.promises for async operations
+const fsPromises = fs.promises;
+
+// Get uploads directory from environment variable
+const uploadDir = process.env.UPLOADS_DIR || path.join(__dirname, '..', 'uploads');
+
+console.log('Upload directory path:', uploadDir);
 
 // Ensure upload directory exists
-fs.mkdir(uploadDir, { recursive: true }).catch(console.error);
+if (!fs.existsSync(uploadDir)) {
+  console.log(`Creating upload directory: ${uploadDir}`);
+  try {
+    fs.mkdirSync(uploadDir, { recursive: true });
+    console.log('Upload directory created successfully');
+  } catch (err) {
+    console.error(`Failed to create upload directory: ${err}`);
+    throw err; // This will crash the app if we can't create the directory
+  }
+}
 
 function generateUniqueFilename(originalname: string): string {
   const timestamp = Date.now();
@@ -34,7 +49,7 @@ const fileFilter = function (req: Express.Request, file: Express.Multer.File, cb
   }
 };
 
- const uploadSuspectImage = multer({ 
+const uploadSuspectImage = multer({
   storage: storage,
   fileFilter: fileFilter
 }).fields([
