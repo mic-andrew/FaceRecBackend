@@ -19,6 +19,7 @@ app.use(express.json());
 
 
 export const jwtSecret = process.env.SESSION_SECRET || "3y6T$#r9D@2sP!zW";
+const uploadsDir  = process.env.UPLOADS_DIR || 'uploads';
 
 app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({
@@ -33,9 +34,24 @@ mongoose.connect(dbUrl).then(() => console.log("Connected!"));
 
 app.use("/", routes);
 
-const uploadsDir = path.join(__dirname, '..', 'src', 'uploads');
+
+
+if (!uploadsDir) {
+  console.error('UPLOADS_DIR is not set in environment variables');
+
+}
+
+if (!fs.existsSync(uploadsDir)) {
+  console.error(`Uploads directory does not exist: ${uploadsDir}`);
+
+}
+
+console.log('Using uploads directory:', uploadsDir);
+
+// Serve static files from the uploads directory
 app.use('/uploads', express.static(uploadsDir));
 
+// Log the contents of the uploads directory
 fs.readdir(uploadsDir, (err, files) => {
   if (err) {
     console.error('Error reading uploads directory:', err);
