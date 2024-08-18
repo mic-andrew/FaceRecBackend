@@ -36,6 +36,10 @@ app.use("/", routes);
 
 console.log('=====>Current working directory:', process.cwd());
 
+const files = fs.readdirSync(process.cwd());
+console.log('Files and folders in current working directory:', files);
+
+
 
 if (!uploadsDir) {
   console.error('UPLOADS_DIR is not set in environment variables');
