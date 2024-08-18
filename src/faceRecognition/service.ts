@@ -22,6 +22,7 @@ interface SuspectData {
 }
 
 const uploadDir = process.env.UPLOADS_DIR || path.join(__dirname, '..', 'uploads');
+const weightsPath = process.env.WEIGHTS_DIR || path.join(__dirname, '..', 'weights');
 
 
 
@@ -32,8 +33,8 @@ let modelsLoaded = false;
 const labeledFaceDescriptors: faceapi.LabeledFaceDescriptors[] = [];
 
 export async function loadModels() {
+  console.log('Loading models from path:', weightsPath);
   if (!modelsLoaded) {
-    const weightsPath = path.join(__dirname, '..', 'utils', 'weights');
     await faceapi.nets.faceRecognitionNet.loadFromDisk(weightsPath);
     await faceapi.nets.faceLandmark68Net.loadFromDisk(weightsPath);
     await faceapi.nets.ssdMobilenetv1.loadFromDisk(weightsPath);
@@ -76,8 +77,11 @@ export async function loadLabeledImages() {
           continue;  // Skip this image and move to the next
         }
 
+        const imagePath = path.join(uploadDir, image.filename);
+        console.log("Full image path:", imagePath);
+
         try {
-          const img = await fs.readFile(uploadDir);
+          const img = await fs.readFile(imagePath);
           const descriptor = await createFaceDescriptor(img);
           if (descriptor) {
             labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(suspect._id.toString(), [descriptor]));
@@ -88,12 +92,14 @@ export async function loadLabeledImages() {
       }
     }
 
+    console.log("Number of labeled face descriptors:", labeledDescriptors.length);
     return labeledDescriptors;
   } catch (error) {
     console.error("Error in loadLabeledImages:", error);
     throw error;
   }
 }
+
 
 export async function recognizeFaceInImage(imageData: Buffer) {
   await loadModels(); // Ensure models are loaded
