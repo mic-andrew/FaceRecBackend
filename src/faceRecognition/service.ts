@@ -3,6 +3,9 @@ import fs from 'fs/promises';
 import path from 'path';
 import { Canvas, Image, ImageData, createCanvas, loadImage } from 'canvas';
 import Suspect from '../models/Suspects';
+import SuspectImage from '../models/SuspectImage';
+
+
 
 interface SuspectData {
   name: string;
@@ -10,7 +13,12 @@ interface SuspectData {
   lastLocation: string;
   country: string;
   gender: string;
-  images: string[];
+  images: {
+    filename: string;
+    originalName: string;
+    mimetype: string;
+    size: number;
+  }[];
 }
 
 
@@ -41,43 +49,95 @@ export async function createFaceDescriptor(image: Buffer | string): Promise<Floa
 }
 
 export async function loadLabeledImages() {
-  if (labeledFaceDescriptors.length > 0) {
-    return; // Labels already loaded
-  }
+  try {
+    const suspects = await Suspect.find().populate({
+      path: 'images',
+      model: SuspectImage
+    });
+    
+    const labeledDescriptors = [];
 
-  const labelsDir = path.join(__dirname, '..', 'utils', 'images');
-  const files = await fs.readdir(labelsDir);
+    for (const suspect of suspects) {
+      console.log("Suspect:", JSON.stringify(suspect, null, 2));
+      
+      if (!Array.isArray(suspect.images)) {
+        console.error(`Suspect ${suspect._id} has non-array images:`, suspect.images);
+        continue;  // Skip this suspect and move to the next
+      }
 
-  for (const file of files) {
-    const label = path.parse(file).name;
-    console.info(`Loading label name of ${label}...`);
-    const imgPath = path.join(labelsDir, file);
-    const img = await fs.readFile(imgPath);
-    const descriptor = await createFaceDescriptor(img);
-    if (descriptor) {
-      console.info(`Loaded descriptor for ${label}`);
-      labeledFaceDescriptors.push(new faceapi.LabeledFaceDescriptors(label, [descriptor]));
+      for (const image of suspect.images) {
+        console.log("Image:", JSON.stringify(image, null, 2));
+        
+        if (!(image instanceof SuspectImage)) {
+          console.error(`Invalid image for suspect ${suspect._id}:`, image);
+          continue;  // Skip this image and move to the next
+        }
+
+        const imgPath = path.join(__dirname, '..', 'uploads', image.filename);
+        try {
+          const img = await fs.readFile(imgPath);
+          const descriptor = await createFaceDescriptor(img);
+          if (descriptor) {
+            labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(suspect._id.toString(), [descriptor]));
+          }
+        } catch (error) {
+          console.error(`Error processing image ${image.filename} for suspect ${suspect._id}:`, error);
+        }
+      }
     }
+
+    return labeledDescriptors;
+  } catch (error) {
+    console.error("Error in loadLabeledImages:", error);
+    throw error;
   }
 }
 
 export async function recognizeFaceInImage(imageData: Buffer) {
   await loadModels(); // Ensure models are loaded
-  await loadLabeledImages(); // Ensure labeled images are loaded
+  const labeledDescriptors = await loadLabeledImages(); // Load labeled images
 
-  console.log("Number of labeled face descriptors:", labeledFaceDescriptors.length);
+  console.log("Number of labeled face descriptors:", labeledDescriptors.length);
 
   try {
     const descriptor = await createFaceDescriptor(imageData);
 
     if (!descriptor) {
-      return { error: 'No face detected' };
+      return { error: 'No face detected in the uploaded image' };
     }
 
-    const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
+    if (labeledDescriptors.length === 0) {
+      return { error: 'No labeled faces available for comparison' };
+    }
+
+    const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors);
     const bestMatch = faceMatcher.findBestMatch(descriptor);
 
-    return { name: bestMatch.label, distance: bestMatch.distance };
+    if (bestMatch.label !== 'unknown') {
+      // A match was found, update the suspect's information
+      const suspectId = bestMatch.label; // This is the suspect's ID
+      const suspect = await Suspect.findByIdAndUpdate(
+        suspectId,
+        { 
+          located: true, 
+          timeLocated: new Date() 
+        },
+        { new: true } // This option returns the updated document
+      );
+
+      if (suspect) {
+        return { 
+          name: suspect.name, 
+          distance: bestMatch.distance,
+          timeLocated: suspect.timeLocated
+        };
+      } else {
+        console.error(`Suspect with ID ${suspectId} not found in database.`);
+        return { error: 'Matching suspect not found in database' };
+      }
+    } else {
+      return { name: 'unknown', distance: bestMatch.distance };
+    }
   } catch (error) {
     console.error('Error in recognizeFaceInImage:', error);
     return { error: 'Failed to process image' };
@@ -85,27 +145,69 @@ export async function recognizeFaceInImage(imageData: Buffer) {
 }
 
 
-
 export async function uploadSuspectData(suspectData: SuspectData) {
-  console.log("suspect data=======>", suspectData)
+  const session = await Suspect.startSession();
+  session.startTransaction();
+
   try {
-    const suspect = new Suspect(suspectData);
-    await suspect.save();
+    const suspect = new Suspect({
+      name: suspectData.name,
+      age: suspectData.age,
+      lastLocation: suspectData.lastLocation,
+      country: suspectData.country,
+      gender: suspectData.gender,
+    });
+
+    await suspect.save({ session });
+
+    const imagePromises = suspectData.images.map(async (imageData) => {
+      const suspectImage = new SuspectImage({
+        suspect: suspect._id,
+        filename: imageData.filename,
+        originalName: imageData.originalName,
+        mimetype: imageData.mimetype,
+        size: imageData.size
+      });
+
+      await suspectImage.save({ session });
+      return suspectImage._id;
+    });
+
+    const imageIds = await Promise.all(imagePromises);
+
+    suspect.images = imageIds;
+    await suspect.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
 
     return {
       message: 'Suspect data uploaded successfully',
       suspectId: suspect._id,
+      imageIds: imageIds
     };
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     console.error('Error uploading suspect data:', error);
-    throw new Error('Failed to upload suspect data');
+    throw error;
   }
 }
 
+
+
 export async function fetchSuspects() {
   try {
-    const suspects = await Suspect.find().select('-__v').lean();
-    console.log("------> feching suspects", suspects)
+    const suspects = await Suspect.find()
+      .populate({
+        path: 'images',
+        model: SuspectImage,
+        select: 'filename' // We only need the filename
+      })
+      .select('-__v')
+      .lean();
+
+    console.log("------> fetching suspects", suspects);
     return suspects;
   } catch (error) {
     console.error('Error in fetchSuspects service:', error);
