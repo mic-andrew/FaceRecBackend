@@ -50,8 +50,14 @@ if (!uploadsDir) {
 }
 
 if (!fs.existsSync(uploadsDir)) {
-  console.error(`Uploads directory does not exist: ${uploadsDir}`);
-
+  console.log(`Creating upload directory: ${uploadsDir}`);
+  try {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('Upload directory created successfully');
+  } catch (err) {
+    console.error(`Failed to create upload directory: ${err}`);
+    process.exit(1);
+  }
 }
 
 console.log('Using uploads directory:', uploadsDir);
