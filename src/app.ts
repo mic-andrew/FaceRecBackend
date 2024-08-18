@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
 import routes from "./routes/index";
+import path from 'path';
+
 
 dotenv.config();
 
@@ -26,6 +28,8 @@ app.get("/health", (req: Request, res: Response) => {
 });
 
 mongoose.connect(dbUrl).then(() => console.log("Connected!"));
+const uploadsDir = path.join(__dirname, '..', 'uploads');
+app.use('/uploads', express.static(uploadsDir));
 
 app.use("/", routes);
 

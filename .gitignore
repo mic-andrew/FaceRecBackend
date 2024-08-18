@@ -3,3 +3,4 @@ src/utils/images
 .env
 dist
 uploads
+/dist
