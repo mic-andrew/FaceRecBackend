@@ -22,7 +22,7 @@ interface SuspectData {
 }
 
 const uploadDir = process.env.UPLOADS_DIR || path.join(__dirname, '..', 'uploads');
-const weightsPath = process.env.WEIGHTS_DIR || path.join(__dirname, '..', 'weights');
+const weightsPath = process.env.WEIGHTS_DIR ||path.join(__dirname, '..', 'utils', 'weights');
 
 
 
@@ -134,6 +134,7 @@ export async function recognizeFaceInImage(imageData: Buffer) {
       );
 
       if (suspect) {
+        console.log('Matching suspect found:', suspect);
         return { 
           name: suspect.name, 
           distance: bestMatch.distance,
