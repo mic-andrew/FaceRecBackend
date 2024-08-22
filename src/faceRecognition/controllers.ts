@@ -5,6 +5,7 @@ import fs from 'fs/promises';
 import { fetchSuspects, recognizeFaceInImage, uploadSuspectData } from './service';
 import SuspectImage from '../models/SuspectImage';
 import { uploadSingleImage, uploadSuspectImage } from '../middleWare/uploadFileMiddleware';
+import Suspect from '../models/Suspects';
 
 
 
@@ -109,14 +110,7 @@ export async function uploadSuspect(req: Request, res: Response) {
   });
 }
 
-
-
-
-
-
-
 export async function recognizeFace(req: Request, res: Response) {
-  
   uploadSingleImage(req, res, async function (err) {
     if (err instanceof multer.MulterError) {
       return res.status(500).json({ error: err.message });
@@ -132,18 +126,60 @@ export async function recognizeFace(req: Request, res: Response) {
       const imageBuffer = await fs.readFile(req.file.path);
       const result = await recognizeFaceInImage(imageBuffer);
       
+      // Extract location and timestamp from the request body
+      const { latitude, longitude, timestamp } = req.body;
+
+      // Validate and parse the timestamp
+      let parsedTimestamp: Date | null = null;
+      if (timestamp) {
+        parsedTimestamp = new Date(timestamp);
+        if (isNaN(parsedTimestamp.getTime())) {
+          parsedTimestamp = null;
+        }
+      }
+
       if (result.name !== 'unknown') {
-        // Save the image details to the database
+        // Save the image details to the SuspectImage collection
         const newImage = new SuspectImage({
           filename: req.file.filename,
           name: result.name,
           distance: result.distance
         });
         await newImage.save();
+
+        // Prepare the update object
+        const updateObject: any = {
+          $set: {
+            lastLocation: latitude && longitude ? `${latitude},${longitude}` : undefined,
+            located: true
+          },
+          $push: { images: newImage._id }
+        };
+
+        // Only set timeLocated if we have a valid timestamp
+        if (parsedTimestamp) {
+          updateObject.$set.timeLocated = parsedTimestamp;
+        }
+
+        // Update or create the Suspect document
+        const suspect = await Suspect.findOneAndUpdate(
+          { name: result.name },
+          updateObject,
+          { new: true, upsert: true }
+        );
+
+        console.log('Updated suspect:', suspect);
       }
 
-      res.json(result);
+      // Include location and timestamp in the response
+      res.json({
+        ...result,
+        latitude: latitude ? parseFloat(latitude) : null,
+        longitude: longitude ? parseFloat(longitude) : null,
+        timestamp: parsedTimestamp ? parsedTimestamp.toISOString() : null
+      });
     } catch (error: any) {
+      console.error('Error in recognizeFace:', error);
       res.status(500).json({ error: error.message });
     }
   });
