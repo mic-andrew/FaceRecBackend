@@ -8,7 +8,6 @@ const fsPromises = fs.promises;
 // Get uploads directory from environment variable
 const uploadDir = process.env.UPLOADS_DIR || path.join(__dirname, '..', 'uploads');
 
-console.log('Upload directory path:', uploadDir);
 
 // Ensure upload directory exists
 if (!fs.existsSync(uploadDir)) {

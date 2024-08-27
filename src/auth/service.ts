@@ -1,83 +1,85 @@
-import { models } from "../models";
-import { IUser } from "../types/userTypes";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { jwtSecret } from "../app";
-import { logger } from "../utils";
+// services/authService.ts
+import User, { IUser } from '../models/User';
+import jwt from 'jsonwebtoken';
+import { Types } from 'mongoose';
+import { Doctor, IDoctor } from '../models/Doctor';
+import mongoose from 'mongoose';
+
+interface UserData {
+  name: string;
+  email: string;
+  password: string;
+  userType: 'patient' | 'doctor' | 'admin';
+  specialty?: string;
+  licenseNumber?: string;
+  employeeId?: string;
+  dateOfBirth?: Date;
+  department?: string;
+}
+
+interface LoginResult {
+  user: IUser;
+  token: string;
+}
 
 
-export const registerUserService = async (userData: IUser) => {
-  userData?.email?.toLowerCase();
-
-  try {
-    const existingUser: IUser | null = await models.User.findOne({
-      email: userData.email,
-    });
-
+class AuthService {
+  async register(userData: UserData): Promise<IUser> {
+    const { email, userType } = userData;
+    
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return { error: true, message: "Email already exists" };
+      throw new Error('Email already in use');
     }
-    const encryptedPassword = await bcrypt.hash(userData.password, 10);
-    userData.password = encryptedPassword;
-    const newUser = new models.User(userData);
-    await newUser.save();
 
-    const userId = newUser._id;
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
+    try {
+      const user = new User(userData);
+      await user.save({ session });
 
-    return {
-      success: true,
-      message: `${userData.firstName} created successfully`,
-      data: newUser,
-    };
-  } catch (error) {
-    console.error(error);
-    return { error: true, message: error };
-  }
-};
-
-export const loginService = async (email: string, password: string) => {
-  try {
-    const userDetails = { email };
-    email.toLowerCase();
-
-    const existingUser: any = await models.User.findOne(userDetails);
-
-
-    if (existingUser) {
-      const decodedPassword = await bcrypt.compare(
-        password,
-        existingUser.password
-      );
-
-      if (decodedPassword) {
-
-        const userId = existingUser._id;
-
-        const token = await jwt.sign({ userId }, jwtSecret, {
-          expiresIn: "12h",
+      if (userType === 'doctor') {
+        const doctorData: Partial<IDoctor> = {
+          name: userData.name,
+          specialty: userData.specialty,
+          department: userData.department,
+          experience: 0, // You might want to add this to UserData if needed
+          contact: userData.email,
+          avatar: '', // You can set a default avatar or leave it empty
+        };
+        
+        const doctor = new Doctor({
+          ...doctorData,
+          user: user._id
         });
-        existingUser.token = token;
-        return {
-          success: true,
-          message: `Welcome back ${existingUser.firstName}`,
-          data: existingUser,
-        };
-      } else {
-        return {
-          success: false,
-          message: "Invalid Email or Password",
-        };
-      }
-    } else {
-      return {
-        success: false,
-        message: "Invalid Email or Password",
-      };
-    }
-  } catch (error) {
-    logger(error);
+        await doctor.save({ session });
 
-    return { error: true, message: error };
+        // Update user with doctor reference
+        user.doctorProfile = doctor._id;
+        await user.save({ session });
+      }
+
+      await session.commitTransaction();
+      return user;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
-};
+
+  async login(email: string, password: string): Promise<LoginResult> {
+    const user = await User.findOne({ email });
+    if (!user || !(await user.comparePassword(password))) {
+      throw new Error('Invalid email or password');
+    }
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET! || "3y6T$#r9D@2sP!zW", {
+      expiresIn: '1d'
+    });
+    return { user, token };
+  }
+}
+
+export default new AuthService();

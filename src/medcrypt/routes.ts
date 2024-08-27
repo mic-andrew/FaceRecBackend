@@ -15,6 +15,10 @@ router.post('/doctors', doctorController.addDoctor);
 router.get('/:doctors', doctorController.getDoctorById);
 router.put('/doctors:id', doctorController.updateDoctor);
 router.delete('/:id', doctorController.deleteDoctor);
+router.post('/doctors/:id/attach-patient', doctorController.attachPatient);
+router.get('/doctors/:id/patients', doctorController.getMyPatients);
+router.post('/doctors/:id/diagnosis',  doctorController.addDiagnosis);
+
 
 
 export default router;
